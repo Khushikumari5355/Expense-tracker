@@ -1,0 +1,371 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f7fb;
+    color: #172033;
+}
+
+.header {
+    background: linear-gradient(135deg, #111827, #2563eb);
+    color: white;
+    padding: 30px 7%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.header h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.header p {
+    color: #dbeafe;
+}
+
+.demo-btn {
+    border: none;
+    padding: 13px 20px;
+    border-radius: 10px;
+    background: white;
+    color: #2563eb;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.container {
+    width: 86%;
+    max-width: 1200px;
+    margin: 30px auto;
+}
+
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.07);
+}
+
+.card h2 {
+    margin-bottom: 8px;
+}
+
+.card p {
+    color: #64748b;
+}
+
+.income-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.input-group label,
+.expense-input label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.input-group input,
+.expense-input input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #d7deea;
+    border-radius: 10px;
+    font-size: 16px;
+    outline: none;
+}
+
+.input-group input:focus,
+.expense-input input:focus {
+    border-color: #2563eb;
+}
+
+.expense-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.expense-input {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.analyze-btn {
+    width: 100%;
+    margin-top: 25px;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: #2563eb;
+    color: white;
+    font-size: 17px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.analyze-btn:hover {
+    background: #1d4ed8;
+}
+
+.hidden {
+    display: none;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.summary-card {
+    padding: 22px;
+    border-radius: 16px;
+    color: white;
+}
+
+.summary-card span {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.summary-card strong {
+    font-size: 28px;
+}
+
+.income-card {
+    background: #2563eb;
+}
+
+.expense-card {
+    background: #7c3aed;
+}
+
+.cut-card {
+    background: #ea580c;
+}
+
+.saving-card {
+    background: #059669;
+}
+
+.status-box {
+    padding: 22px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    background: #eff6ff;
+    border-left: 6px solid #2563eb;
+}
+
+.status-box h2 {
+    margin-bottom: 7px;
+}
+
+.status-danger {
+    background: #fff1f2;
+    border-left-color: #e11d48;
+}
+
+.status-success {
+    background: #ecfdf5;
+    border-left-color: #059669;
+}
+
+.status-warning {
+    background: #fffbeb;
+    border-left-color: #d97706;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 15px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+th {
+    background: #f8fafc;
+}
+
+.cut {
+    color: #dc2626;
+    font-weight: bold;
+}
+
+.no-cut {
+    color: #059669;
+    font-weight: bold;
+}
+
+.action {
+    color: #475569;
+    font-size: 14px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.chart-card {
+    min-height: 420px;
+}
+
+.chart-card canvas {
+    max-height: 330px;
+    margin-top: 15px;
+}
+
+.final-plan {
+    background: linear-gradient(135deg, #111827, #1e3a8a);
+    color: white;
+}
+
+.final-plan h2 {
+    color: white;
+}
+
+.plan-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-top: 25px;
+}
+
+.plan-grid div {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.plan-grid span {
+    display: block;
+    color: #cbd5e1;
+    margin-bottom: 8px;
+}
+
+.plan-grid strong {
+    font-size: 26px;
+}
+
+.progress-container {
+    margin-top: 30px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #e2e8f0;
+}
+
+.progress-bar {
+    height: 14px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-bar div {
+    height: 100%;
+    width: 0;
+    background: #34d399;
+    transition: width 0.7s ease;
+}
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #64748b;
+}
+
+
+/* TABLET */
+
+@media (max-width: 900px) {
+
+    .expense-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+    .header {
+        padding: 25px 5%;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header h1 {
+        font-size: 26px;
+    }
+
+    .container {
+        width: 92%;
+    }
+
+    .income-row {
+        grid-template-columns: 1fr;
+    }
+
+    .expense-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .plan-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    th,
+    td {
+        min-width: 120px;
+    }
+
+}
