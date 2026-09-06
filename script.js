@@ -1,406 +1,809 @@
-const incomeInput = document.getElementById("income");
-const savingTargetInput = document.getElementById("savingTarget");
+const incomeInput =
+    document.getElementById("income");
 
-const expenseInputs = document.querySelectorAll(".expense");
+const savingTargetInput =
+    document.getElementById("savingTarget");
 
-const analyzeBtn = document.getElementById("analyzeBtn");
-const demoBtn = document.getElementById("demoBtn");
+const expenseInputs =
+    document.querySelectorAll(".expense");
 
-const results = document.getElementById("results");
+const analyzeBtn =
+    document.getElementById("analyzeBtn");
 
-const incomeResult = document.getElementById("incomeResult");
-const expenseResult = document.getElementById("expenseResult");
-const cutResult = document.getElementById("cutResult");
-const savingResult = document.getElementById("savingResult");
+const exampleBtn =
+    document.getElementById("exampleBtn");
 
-const statusBox = document.getElementById("statusBox");
-const statusTitle = document.getElementById("statusTitle");
-const statusText = document.getElementById("statusText");
+const freshNotice =
+    document.getElementById("freshNotice");
 
-const budgetTable = document.getElementById("budgetTable");
+const freshBtn =
+    document.getElementById("freshBtn");
 
-const planIncome = document.getElementById("planIncome");
-const planExpense = document.getElementById("planExpense");
-const planSavings = document.getElementById("planSavings");
+const recommendationSection =
+    document.getElementById(
+        "recommendationSection"
+    );
 
-const savingPercentage = document.getElementById("savingPercentage");
-const progress = document.getElementById("progress");
+const results =
+    document.getElementById("results");
+
 
 let currentChart = null;
+
 let recommendedChart = null;
 
+/* CATEGORY WEIGHTS*/
 
-/* -----------------------------------
-   CATEGORY SETTINGS
------------------------------------ */
+const categoryWeights = {
 
-const categories = {
+    Housing: 25,
 
-    Housing: {
-        target: 0.25,
-        priority: 1,
-        action: "Consider cheaper housing, refinancing or sharing options."
-    },
+    Food: 12.5,
 
-    Food: {
-        target: 0.10,
-        priority: 3,
-        action: "Reduce restaurant orders and plan weekly groceries."
-    },
+    Transportation: 10,
 
-    Transportation: {
-        target: 0.08,
-        priority: 3,
-        action: "Use public transport, carpooling or reduce unnecessary trips."
-    },
+    Utilities: 7.5,
 
-    Utilities: {
-        target: 0.07,
-        priority: 1,
-        action: "Reduce electricity, internet and subscription costs."
-    },
+    Healthcare: 7.5,
 
-    Healthcare: {
-        target: 0.05,
-        priority: 1,
-        action: "Keep essential healthcare spending protected."
-    },
+    Entertainment: 5,
 
-    Entertainment: {
-        target: 0.05,
-        priority: 4,
-        action: "Reduce subscriptions, outings and unnecessary entertainment."
-    },
+    Shopping: 7.5,
 
-    Shopping: {
-        target: 0.08,
-        priority: 5,
-        action: "Avoid impulse purchases and set a monthly shopping limit."
-    },
+    Other: 5
 
-    Other: {
-        target: 0.07,
-        priority: 4,
-        action: "Review miscellaneous expenses and remove unnecessary spending."
-    }
 };
 
 
-/* -----------------------------------
-   FORMAT MONEY
------------------------------------ */
+/*ACTIONS*/
+
+const actions = {
+
+    Housing:
+        "Try to keep rent within the recommended limit.",
+
+    Food:
+        "Reduce restaurant orders and plan your groceries.",
+
+    Transportation:
+        "Reduce unnecessary trips and transport costs.",
+
+    Utilities:
+        "Reduce electricity, bills and unnecessary subscriptions.",
+
+    Healthcare:
+        "Keep essential healthcare expenses protected.",
+
+    Entertainment:
+        "Reduce unnecessary entertainment and subscriptions.",
+
+    Shopping:
+        "Avoid impulse shopping and unnecessary purchases.",
+
+    Other:
+        "Review miscellaneous expenses and remove unnecessary costs."
+
+};
+
+
+/* RUPEE FORMAT */
 
 function money(value) {
 
-    return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: "USD",
-        maximumFractionDigits: 0
-    }).format(value);
+    return new Intl.NumberFormat(
+        "en-IN",
+        {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 0
+        }
+    ).format(value);
 
 }
 
 
-/* -----------------------------------
-   GET EXPENSES
------------------------------------ */
+/* GET EXPENSES */
 
 function getExpenses() {
 
     const expenses = {};
 
+
     expenseInputs.forEach(input => {
 
-        const category = input.dataset.category;
+        const category =
+            input.dataset.category;
 
-        expenses[category] = Number(input.value) || 0;
+        expenses[category] =
+            Number(input.value) || 0;
 
     });
 
+
     return expenses;
+
 }
 
 
-/* -----------------------------------
-   ANALYZE
------------------------------------ */
+/*CLEAR CURRENT EXPENSE */
+
+function clearCurrentExpenses() {
+
+    expenseInputs.forEach(input => {
+
+        input.value = "";
+
+    });
+
+
+    /*
+        Hide old analysis.
+    */
+
+    results.classList.add(
+        "hidden"
+    );
+
+
+    /*
+        Destroy old charts.
+    */
+
+    if (currentChart) {
+
+        currentChart.destroy();
+
+        currentChart = null;
+
+    }
+
+
+    if (recommendedChart) {
+
+        recommendedChart.destroy();
+
+        recommendedChart = null;
+
+    }
+
+
+    /*
+        Show fresh expense option.
+    */
+
+    freshNotice.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/*START FRESH BUTTON*/
+
+freshBtn.addEventListener(
+    "click",
+    function() {
+
+        /*
+            Expenses are already cleared.
+            Just hide the notice and focus
+            on first expense field.
+        */
+
+        freshNotice.classList.add(
+            "hidden"
+        );
+
+
+        expenseInputs[0].focus();
+
+    }
+);
+
+
+/* CREATE RECOMMENDED BUDGET*/
+
+function createRecommendedBudget(
+    income,
+    savingPercent
+) {
+
+    const targetSavings =
+        income *
+        savingPercent /
+        100;
+
+
+    const maximumSpending =
+        income -
+        targetSavings;
+
+
+    let totalWeight = 0;
+
+
+    Object.values(categoryWeights)
+        .forEach(weight => {
+
+            totalWeight += weight;
+
+        });
+
+
+    const recommended = {};
+
+
+    Object.keys(categoryWeights)
+        .forEach(category => {
+
+            const share =
+                categoryWeights[category] /
+                totalWeight;
+
+
+            recommended[category] =
+                maximumSpending *
+                share;
+
+        });
+
+
+    return {
+
+        recommended,
+
+        maximumSpending,
+
+        targetSavings
+
+    };
+
+}
+
+
+/*SHOW RECOMMENDED BUDGET*/
+
+function showRecommendedBudget(
+    recommended,
+    maximumSpending,
+    targetSavings
+) {
+
+    document.getElementById(
+        "recHousing"
+    ).textContent =
+        money(recommended.Housing);
+
+
+    document.getElementById(
+        "recFood"
+    ).textContent =
+        money(recommended.Food);
+
+
+    document.getElementById(
+        "recTransport"
+    ).textContent =
+        money(recommended.Transportation);
+
+
+    document.getElementById(
+        "recUtilities"
+    ).textContent =
+        money(recommended.Utilities);
+
+
+    document.getElementById(
+        "recHealthcare"
+    ).textContent =
+        money(recommended.Healthcare);
+
+
+    document.getElementById(
+        "recEntertainment"
+    ).textContent =
+        money(recommended.Entertainment);
+
+
+    document.getElementById(
+        "recShopping"
+    ).textContent =
+        money(recommended.Shopping);
+
+
+    document.getElementById(
+        "recOther"
+    ).textContent =
+        money(recommended.Other);
+
+
+    document.getElementById(
+        "maxSpending"
+    ).textContent =
+        money(maximumSpending);
+
+
+    document.getElementById(
+        "targetSavings"
+    ).textContent =
+        money(targetSavings);
+
+
+    recommendationSection.classList.remove(
+        "hidden"
+    );
+
+}
+
+
+/*UPDATE RECOMMENDATION WHEN
+   INCOME / SAVING CHANGES*/
+
+function updateRecommendation() {
+
+    const income =
+        Number(incomeInput.value);
+
+
+    const savingPercent =
+        Number(savingTargetInput.value);
+
+
+    if (
+        income > 0 &&
+        savingTargetInput.value !== "" &&
+        savingPercent >= 0 &&
+        savingPercent <= 90
+    ) {
+
+        const budget =
+            createRecommendedBudget(
+                income,
+                savingPercent
+            );
+
+
+        showRecommendedBudget(
+
+            budget.recommended,
+
+            budget.maximumSpending,
+
+            budget.targetSavings
+
+        );
+
+    }
+
+}
+
+
+/*INCOME CHANGE*/
+
+incomeInput.addEventListener(
+    "input",
+    function() {
+
+        /*
+            If expenses already exist,
+            income change means start fresh.
+        */
+
+        const hasExpenses =
+            Array.from(expenseInputs)
+                .some(
+                    input =>
+                        input.value !== ""
+                );
+
+
+        if (hasExpenses) {
+
+            clearCurrentExpenses();
+
+        }
+
+
+        /*
+            Update recommended budget.
+        */
+
+        updateRecommendation();
+
+    }
+);
+
+
+/* 
+   SAVING TARGET CHANGE
+ */
+
+savingTargetInput.addEventListener(
+    "input",
+    function() {
+
+        const hasExpenses =
+            Array.from(expenseInputs)
+                .some(
+                    input =>
+                        input.value !== ""
+                );
+
+
+        if (hasExpenses) {
+
+            clearCurrentExpenses();
+
+        }
+
+
+        /*
+            Update recommended budget.
+        */
+
+        updateRecommendation();
+
+    }
+);
+
+
+/* 
+   MAIN ANALYSIS
+ */
 
 function analyzeExpenses() {
 
-    const income = Number(incomeInput.value);
+    const income =
+        Number(incomeInput.value);
 
-    const savingPercent = Number(savingTargetInput.value) || 0;
+
+    const savingPercent =
+        Number(savingTargetInput.value);
+
+
+    /* Income validation */
 
     if (!income || income <= 0) {
 
-        alert("Please enter your monthly income.");
+        alert(
+            "Please enter your monthly income."
+        );
 
         return;
 
     }
 
 
-    const expenses = getExpenses();
+    /* Saving validation */
 
-    let totalExpenses = 0;
+    if (
+        savingTargetInput.value === ""
+    ) {
 
-    Object.values(expenses).forEach(value => {
+        alert(
+            "Please enter your saving target."
+        );
 
-        totalExpenses += value;
+        return;
 
-    });
-
-
-    /*
-        Example:
-
-        Income = $30,000
-        Saving Target = 20%
-
-        Target Savings = $6,000
-
-        Maximum spending = $24,000
-    */
-
-    const targetSavings = income * savingPercent / 100;
-
-    const maximumSpending = income - targetSavings;
+    }
 
 
-    /*
-        If current expenses are greater than
-        maximum recommended spending,
-        calculate required reduction.
-    */
+    if (
+        savingPercent < 0 ||
+        savingPercent > 90
+    ) {
 
-    let requiredCut = Math.max(
-        0,
-        totalExpenses - maximumSpending
+        alert(
+            "Saving target should be between 0% and 90%."
+        );
+
+        return;
+
+    }
+
+
+    /* Create budget */
+
+    const budget =
+        createRecommendedBudget(
+            income,
+            savingPercent
+        );
+
+
+    const recommended =
+        budget.recommended;
+
+
+    const maximumSpending =
+        budget.maximumSpending;
+
+
+    const targetSavings =
+        budget.targetSavings;
+
+
+    /* Show recommendation */
+
+    showRecommendedBudget(
+
+        recommended,
+
+        maximumSpending,
+
+        targetSavings
+
     );
 
 
-    /*
-        Calculate initial recommended amounts
-        using category target percentages.
-    */
+    /* Get expenses */
 
-    let recommended = {};
-
-    Object.keys(expenses).forEach(category => {
-
-        const categoryLimit =
-            income * categories[category].target;
-
-        recommended[category] =
-            Math.min(expenses[category], categoryLimit);
-
-    });
+    const expenses =
+        getExpenses();
 
 
-    /*
-        Make sure recommended expenses don't exceed
-        maximum spending.
-
-        If they exceed the limit, reduce flexible
-        categories first.
-    */
-
-    let recommendedTotal =
-        Object.values(recommended)
-        .reduce((sum, value) => sum + value, 0);
+    let totalExpenses = 0;
 
 
-    if (recommendedTotal > maximumSpending) {
+    Object.values(expenses)
+        .forEach(value => {
 
-        let extraReduction =
-            recommendedTotal - maximumSpending;
-
-
-        const flexibleCategories =
-            Object.keys(categories)
-            .sort((a, b) =>
-                categories[b].priority -
-                categories[a].priority
-            );
-
-
-        flexibleCategories.forEach(category => {
-
-            if (extraReduction <= 0) return;
-
-            const reduction =
-                Math.min(
-                    recommended[category],
-                    extraReduction
-                );
-
-            recommended[category] -= reduction;
-
-            extraReduction -= reduction;
+            totalExpenses += value;
 
         });
 
 
-        recommendedTotal =
-            Object.values(recommended)
-            .reduce((sum, value) => sum + value, 0);
+    /* Calculate cuts */
 
-    }
+    let totalCut = 0;
 
 
-    /*
-        If current expenses are already below
-        the maximum spending limit, don't force
-        unnecessary cuts.
-    */
+    Object.keys(expenses)
+        .forEach(category => {
 
-    if (totalExpenses <= maximumSpending) {
+            if (
+                expenses[category] >
+                recommended[category]
+            ) {
 
-        recommended = {...expenses};
+                totalCut +=
+                    expenses[category] -
+                    recommended[category];
 
-        recommendedTotal = totalExpenses;
+            }
 
-    }
-
-
-    /*
-        Actual savings after recommended spending.
-    */
-
-    let actualSavings =
-        income - recommendedTotal;
-
-
-    /*
-        Total amount reduced from current spending.
-    */
-
-    let totalCut =
-        Math.max(0, totalExpenses - recommendedTotal);
+        });
 
 
     showResults(
+
         income,
+
         totalExpenses,
+
         recommended,
+
         totalCut,
-        actualSavings,
+
+        targetSavings,
+
         savingPercent
+
     );
 
 
-    saveData();
+    /*
+        Analysis is done, so
+        fresh notice can disappear.
+    */
+
+    freshNotice.classList.add(
+        "hidden"
+    );
 
 }
 
 
-/* -----------------------------------
-   SHOW RESULTS
------------------------------------ */
+/*SHOW RESULTS
+ */
 
 function showResults(
+
     income,
     totalExpenses,
     recommended,
     totalCut,
-    actualSavings,
+    targetSavings,
     savingPercent
+
 ) {
 
-    results.classList.remove("hidden");
+    results.classList.remove(
+        "hidden"
+    );
 
 
-    incomeResult.textContent = money(income);
+    document.getElementById(
+        "incomeResult"
+    ).textContent =
+        money(income);
 
-    expenseResult.textContent =
+
+    document.getElementById(
+        "expenseResult"
+    ).textContent =
         money(totalExpenses);
 
-    cutResult.textContent =
+
+    document.getElementById(
+        "cutResult"
+    ).textContent =
         money(totalCut);
 
-    savingResult.textContent =
-        money(actualSavings);
+
+    document.getElementById(
+        "savingResult"
+    ).textContent =
+        money(targetSavings);
 
 
-    /*
-        Status message
-    */
+    const statusBox =
+        document.getElementById(
+            "statusBox"
+        );
 
-    statusBox.className = "status-box";
+
+    const statusTitle =
+        document.getElementById(
+            "statusTitle"
+        );
 
 
-    if (totalExpenses > income) {
+    const statusText =
+        document.getElementById(
+            "statusText"
+        );
 
-        statusBox.classList.add("status-danger");
+
+    statusBox.className =
+        "status-box";
+
+
+    /* No expenses */
+
+    if (totalExpenses === 0) {
 
         statusTitle.textContent =
-            "⚠️ You are spending more than your income";
+            "Your personalized budget is ready";
+
 
         statusText.textContent =
-            `You currently spend ${money(totalExpenses)} while earning ${money(income)}. ` +
-            `Your monthly deficit is ${money(totalExpenses - income)}. ` +
-            `The plan below shows where you can reduce expenses.`;
+            `Your recommended spending limit is ${money(
+                income - targetSavings
+            )} and your target savings is ${money(
+                targetSavings
+            )}. Enter your current expenses to see where you can reduce spending.`;
 
     }
 
-    else if (actualSavings >= income * savingPercent / 100) {
 
-        statusBox.classList.add("status-success");
+    /* Spending higher than income */
+
+    else if (totalExpenses > income) {
+
+        statusBox.classList.add(
+            "status-danger"
+        );
+
+
+        const extra =
+            totalExpenses - income;
+
 
         statusTitle.textContent =
-            "✅ Your budget is on track";
+            "Your expenses are higher than your income";
+
 
         statusText.textContent =
-            `Your recommended plan allows you to save ${money(actualSavings)} every month.`;
+            `You are spending ${money(
+                extra
+            )} more than your monthly income. Reduce unnecessary expenses.`;
 
     }
+
+
+    /* Spending above recommended */
+
+    else if (
+        totalExpenses >
+        income - targetSavings
+    ) {
+
+        statusBox.classList.add(
+            "status-warning"
+        );
+
+
+        const extra =
+            totalExpenses -
+            (income - targetSavings);
+
+
+        statusTitle.textContent =
+            "Your expenses can be reduced";
+
+
+        statusText.textContent =
+            `You are spending approximately ${money(
+                extra
+            )} above your recommended spending limit. Check the reduction plan below.`;
+
+    }
+
+
+    /* Good */
 
     else {
 
-        statusBox.classList.add("status-warning");
+        statusBox.classList.add(
+            "status-success"
+        );
+
 
         statusTitle.textContent =
-            "💡 You can improve your savings";
+            "Your spending is within the recommended budget";
+
 
         statusText.textContent =
-            `Your current spending can be optimized to create more room for savings.`;
+            `Good job! Your current spending is within your recommended limit. Your target savings is ${money(
+                targetSavings
+            )} per month.`;
 
     }
 
 
-    createBudgetTable(recommended);
+    createBudgetTable(
+        recommended
+    );
 
-    createCharts(recommended);
 
-    planIncome.textContent =
+    createCharts(
+        recommended
+    );
+
+
+    document.getElementById(
+        "planIncome"
+    ).textContent =
         money(income);
 
-    const recommendedTotal =
-        Object.values(recommended)
-        .reduce((sum, value) => sum + value, 0);
 
-    planExpense.textContent =
-        money(recommendedTotal);
-
-    planSavings.textContent =
-        money(actualSavings);
+    document.getElementById(
+        "planExpense"
+    ).textContent =
+        money(
+            income - targetSavings
+        );
 
 
-    const percent =
-        income > 0
-            ? (actualSavings / income) * 100
-            : 0;
-
-    savingPercentage.textContent =
-        `${percent.toFixed(1)}%`;
-
-    progress.style.width =
-        `${Math.min(percent, 100)}%`;
+    document.getElementById(
+        "planSavings"
+    ).textContent =
+        money(targetSavings);
 
 
-    /*
-        Scroll to results
-    */
+    document.getElementById(
+        "savingPercentage"
+    ).textContent =
+        `${savingPercent}%`;
+
+
+    document.getElementById(
+        "progress"
+    ).style.width =
+        `${savingPercent}%`;
+
 
     results.scrollIntoView({
         behavior: "smooth"
@@ -409,85 +812,110 @@ function showResults(
 }
 
 
-/* -----------------------------------
-   CREATE BUDGET TABLE
------------------------------------ */
+/*
+   CREATE REDUCTION TABLE
+ */
 
-function createBudgetTable(recommended) {
+function createBudgetTable(
+    recommended
+) {
 
-    const expenses = getExpenses();
-
-    budgetTable.innerHTML = "";
-
-
-    Object.keys(expenses).forEach(category => {
-
-        const current = expenses[category];
-
-        const suggested = recommended[category];
-
-        const cut =
-            Math.max(0, current - suggested);
+    const expenses =
+        getExpenses();
 
 
-        const row =
-            document.createElement("tr");
+    const table =
+        document.getElementById(
+            "budgetTable"
+        );
 
 
-        let cutClass =
-            cut > 0
-                ? "cut"
-                : "no-cut";
+    table.innerHTML = "";
 
 
-        let cutText =
-            cut > 0
-                ? `-${money(cut)}`
-                : "No cut needed";
+    Object.keys(expenses)
+        .forEach(category => {
+
+            const current =
+                expenses[category];
 
 
-        row.innerHTML = `
-
-            <td>
-                <strong>${category}</strong>
-            </td>
-
-            <td>
-                ${money(current)}
-            </td>
-
-            <td>
-                ${money(suggested)}
-            </td>
-
-            <td class="${cutClass}">
-                ${cutText}
-            </td>
-
-            <td class="action">
-                ${cut > 0
-                    ? categories[category].action
-                    : "Your current spending is within the suggested limit."
-                }
-            </td>
-
-        `;
+            const suggested =
+                recommended[category];
 
 
-        budgetTable.appendChild(row);
+            const cut =
+                Math.max(
+                    0,
+                    current - suggested
+                );
 
-    });
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    <strong>
+                        ${category}
+                    </strong>
+                </td>
+
+                <td>
+                    ${money(current)}
+                </td>
+
+                <td>
+                    ${money(suggested)}
+                </td>
+
+                <td class="${
+                    cut > 0
+                        ? "cut"
+                        : "no-cut"
+                }">
+
+                    ${
+                        cut > 0
+                            ? money(cut)
+                            : "₹0"
+                    }
+
+                </td>
+
+                <td class="action">
+
+                    ${
+                        cut > 0
+                            ? actions[category]
+                            : "Spending is within the recommended limit."
+                    }
+
+                </td>
+
+            `;
+
+
+            table.appendChild(row);
+
+        });
 
 }
 
 
-/* -----------------------------------
-   CHARTS
------------------------------------ */
+/* 
+   CREATE CHARTS
+ */
 
-function createCharts(recommended) {
+function createCharts(
+    recommended
+) {
 
-    const expenses = getExpenses();
+    const expenses =
+        getExpenses();
+
 
     const labels =
         Object.keys(expenses);
@@ -501,15 +929,14 @@ function createCharts(recommended) {
         Object.values(recommended);
 
 
-    /*
-        Destroy old charts
-    */
+    /* Destroy old charts */
 
     if (currentChart) {
 
         currentChart.destroy();
 
     }
+
 
     if (recommendedChart) {
 
@@ -518,109 +945,112 @@ function createCharts(recommended) {
     }
 
 
-    /*
-        Current spending doughnut
-    */
+    /* PIE CHART */
 
-    const currentCanvas =
-        document.getElementById("currentChart");
+    const pieLabels = [];
+
+    const pieValues = [];
 
 
-    currentChart =
-        new Chart(currentCanvas, {
+    labels.forEach(
+        (category, index) => {
 
-            type: "doughnut",
+            if (
+                currentValues[index] > 0
+            ) {
 
-            data: {
+                pieLabels.push(
+                    category
+                );
 
-                labels: labels,
-
-                datasets: [{
-
-                    data: currentValues,
-
-                    borderWidth: 2
-
-                }]
-
-            },
-
-            options: {
-
-                responsive: true,
-
-                plugins: {
-
-                    legend: {
-
-                        position: "bottom"
-
-                    }
-
-                }
+                pieValues.push(
+                    currentValues[index]
+                );
 
             }
 
-        });
+        }
+    );
 
 
     /*
-        Current vs Recommended
+        If no expenses are entered,
+        don't create a fake expense.
     */
 
-    const recommendedCanvas =
-        document.getElementById(
-            "recommendedChart"
+    if (pieValues.length === 0) {
+
+        pieLabels.push(
+            "No expenses entered"
         );
 
+        pieValues.push(1);
 
-    recommendedChart =
-        new Chart(recommendedCanvas, {
+    }
 
-            type: "bar",
 
-            data: {
+    currentChart =
+        new Chart(
 
-                labels: labels,
+            document.getElementById(
+                "currentChart"
+            ),
 
-                datasets: [
+            {
 
-                    {
+                type: "pie",
 
-                        label: "Current",
+                data: {
 
-                        data: currentValues
+                    labels: pieLabels,
 
-                    },
+                    datasets: [{
 
-                    {
+                        data: pieValues,
 
-                        label: "Recommended",
+                        borderWidth: 2
 
-                        data: recommendedValues
+                    }]
 
-                    }
+                },
 
-                ]
+                options: {
 
-            },
+                    responsive: true,
 
-            options: {
+                    maintainAspectRatio: false,
 
-                responsive: true,
+                    plugins: {
 
-                scales: {
+                        legend: {
 
-                    y: {
+                            position: "bottom"
 
-                        beginAtZero: true,
+                        },
 
-                        ticks: {
+                        tooltip: {
 
-                            callback: function(value) {
+                            callbacks: {
 
-                                return "$" +
-                                    value.toLocaleString();
+                                label:
+                                    function(context) {
+
+                                        if (
+                                            pieLabels[0] ===
+                                            "No expenses entered"
+                                        ) {
+
+                                            return " No expenses entered";
+
+                                        }
+
+
+                                        return " " +
+                                            money(
+                                                context.raw
+                                            );
+
+                                    }
 
                             }
 
@@ -632,62 +1062,92 @@ function createCharts(recommended) {
 
             }
 
-        });
+        );
+
+
+    /* BAR CHART */
+
+    recommendedChart =
+        new Chart(
+
+            document.getElementById(
+                "recommendedChart"
+            ),
+
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Current",
+
+                            data:
+                                currentValues
+
+                        },
+
+                        {
+
+                            label:
+                                "Recommended",
+
+                            data:
+                                recommendedValues
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    scales: {
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            ticks: {
+
+                                callback:
+                                    function(value) {
+
+                                        return "₹" +
+                                            value.toLocaleString(
+                                                "en-IN"
+                                            );
+
+                                    }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        );
 
 }
 
 
-/* -----------------------------------
-   DEMO DATA
------------------------------------ */
-
-demoBtn.addEventListener("click", function() {
-
-    incomeInput.value = 30000;
-
-    savingTargetInput.value = 20;
-
-
-    const demoExpenses = {
-
-        Housing: 12000,
-
-        Food: 6000,
-
-        Transportation: 5000,
-
-        Utilities: 3000,
-
-        Healthcare: 2000,
-
-        Entertainment: 4000,
-
-        Shopping: 7000,
-
-        Other: 6000
-
-    };
-
-
-    expenseInputs.forEach(input => {
-
-        const category =
-            input.dataset.category;
-
-        input.value =
-            demoExpenses[category] || 0;
-
-    });
-
-
-    analyzeExpenses();
-
-});
-
-
-/* -----------------------------------
-   ANALYZE BUTTON
------------------------------------ */
+/* ANALYZE BUTTON */
 
 analyzeBtn.addEventListener(
     "click",
@@ -695,77 +1155,106 @@ analyzeBtn.addEventListener(
 );
 
 
-/* -----------------------------------
-   LOCAL STORAGE
------------------------------------ */
+/*
+   ₹30,000 EXAMPLE
+ */
 
-function saveData() {
+exampleBtn.addEventListener(
+    "click",
+    function() {
 
-    const data = {
+        /*
+            Example is loaded ONLY
+            when this button is clicked.
+        */
 
-        income: incomeInput.value,
+        incomeInput.value = 30000;
 
-        savingTarget:
-            savingTargetInput.value,
-
-        expenses: getExpenses()
-
-    };
-
-
-    localStorage.setItem(
-        "smartExpenseAdvisor",
-        JSON.stringify(data)
-    );
-
-}
+        savingTargetInput.value = 50;
 
 
-function loadData() {
-
-    const saved =
-        localStorage.getItem(
-            "smartExpenseAdvisor"
-        );
+        document.querySelector(
+            '[data-category="Housing"]'
+        ).value = 6000;
 
 
-    if (!saved) return;
+        document.querySelector(
+            '[data-category="Food"]'
+        ).value = 4000;
 
 
-    const data =
-        JSON.parse(saved);
+        document.querySelector(
+            '[data-category="Transportation"]'
+        ).value = 2500;
 
 
-    incomeInput.value =
-        data.income || "";
+        document.querySelector(
+            '[data-category="Utilities"]'
+        ).value = 1500;
 
 
-    savingTargetInput.value =
-        data.savingTarget || 20;
+        document.querySelector(
+            '[data-category="Healthcare"]'
+        ).value = 1000;
 
 
-    if (data.expenses) {
+        document.querySelector(
+            '[data-category="Entertainment"]'
+        ).value = 1500;
 
-        expenseInputs.forEach(input => {
 
-            const category =
-                input.dataset.category;
+        document.querySelector(
+            '[data-category="Shopping"]'
+        ).value = 2000;
 
-            input.value =
-                data.expenses[category] || 0;
 
-        });
+        document.querySelector(
+            '[data-category="Other"]'
+        ).value = 1000;
+
+
+        analyzeExpenses();
 
     }
+);
 
-}
 
-
-/* -----------------------------------
-   LOAD SAVED DATA
------------------------------------ */
+/*
+   INITIAL PAGE
+ */
 
 window.addEventListener(
     "DOMContentLoaded",
-    loadData
+    function() {
+
+        /*
+            EVERYTHING BLANK
+        */
+
+        incomeInput.value = "";
+
+        savingTargetInput.value = "";
+
+
+        expenseInputs.forEach(
+            input => {
+
+                input.value = "";
+
+            }
+        );
+
+
+        recommendationSection
+            .classList.add("hidden");
+
+
+        results
+            .classList.add("hidden");
+
+
+        freshNotice
+            .classList.add("hidden");
+
+    }
 );
