@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,248 +9,740 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
 
-<header class="header">
-    <div>
-        <h1>Smart Expense Advisor</h1>
-        <p>Plan your expenses, reduce unnecessary spending & build savings.</p>
-    </div>
+    <!-- HEADER -->
+    <header class="header">
 
-    <button id="demoBtn" class="demo-btn">
-        Load $30K Example
-    </button>
-</header>
+        <div>
+            <h1>Smart Expense Advisor</h1>
 
-
-<main class="container">
-
-    <!-- INPUT SECTION -->
-    <section class="card">
-
-        <h2>💰 Monthly Financial Details</h2>
-
-        <div class="income-row">
-            <div class="input-group">
-                <label>Monthly Income ($)</label>
-                <input
-                    type="number"
-                    id="income"
-                    placeholder="30000"
-                    min="0"
-                >
-            </div>
-
-            <div class="input-group">
-                <label>Target Savings (%)</label>
-                <input
-                    type="number"
-                    id="savingTarget"
-                    value="20"
-                    min="0"
-                    max="80"
-                >
-            </div>
+            <p>
+                Plan your expenses, reduce unnecessary spending and increase savings.
+            </p>
         </div>
 
-    </section>
+    </header>
 
 
-    <!-- EXPENSE SECTION -->
-    <section class="card">
+    <main class="container">
 
-        <div class="section-title">
+
+        <!-- =================================
+             FINANCIAL DETAILS
+        ================================== -->
+
+        <section class="card financial-card">
+
+            <!-- EXAMPLE BUTTON - TOP LEFT -->
+
+            <button
+                type="button"
+                id="exampleBtn"
+                class="example-btn"
+            >
+                ₹30,000 Example
+            </button>
+
+
+            <div class="financial-content">
+
+                <h2>
+                    Monthly Financial Details
+                </h2>
+
+                <p class="section-description">
+                    Enter your monthly income and desired saving target.
+                </p>
+
+
+                <div class="income-row">
+
+                    <div class="input-group">
+
+                        <label for="income">
+                            Monthly Income (₹)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="income"
+                            placeholder="Enter your income"
+                            min="0"
+                        >
+
+                    </div>
+
+
+                    <div class="input-group">
+
+                        <label for="savingTarget">
+                            Saving Target (%)
+                        </label>
+
+                        <input
+                            type="number"
+                            id="savingTarget"
+                            placeholder="Enter saving %"
+                            min="0"
+                            max="90"
+                        >
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- FRESH EXPENSE NOTICE-->
+
+        <div
+            id="freshNotice"
+            class="fresh-notice hidden"
+        >
+
             <div>
-                <h2>📊 Current Monthly Expenses</h2>
-                <p>Enter how much you currently spend in each category.</p>
-            </div>
-        </div>
 
-        <div class="expense-grid">
+                <strong>
+                    🔄 Financial details changed
+                </strong>
 
-            <div class="expense-input">
-                <label>🏠 Housing</label>
-                <input type="number" class="expense" data-category="Housing" placeholder="$0">
-            </div>
+                <p>
+                    Previous expenses have been cleared.
+                    Enter fresh expenses for the new income/saving target.
+                </p>
 
-            <div class="expense-input">
-                <label>🍔 Food</label>
-                <input type="number" class="expense" data-category="Food" placeholder="$0">
             </div>
 
-            <div class="expense-input">
-                <label>🚗 Transportation</label>
-                <input type="number" class="expense" data-category="Transportation" placeholder="$0">
-            </div>
 
-            <div class="expense-input">
-                <label>💡 Utilities & Bills</label>
-                <input type="number" class="expense" data-category="Utilities" placeholder="$0">
-            </div>
-
-            <div class="expense-input">
-                <label>🏥 Healthcare</label>
-                <input type="number" class="expense" data-category="Healthcare" placeholder="$0">
-            </div>
-
-            <div class="expense-input">
-                <label>🎬 Entertainment</label>
-                <input type="number" class="expense" data-category="Entertainment" placeholder="$0">
-            </div>
-
-            <div class="expense-input">
-                <label>🛍️ Shopping</label>
-                <input type="number" class="expense" data-category="Shopping" placeholder="$0">
-            </div>
-
-            <div class="expense-input">
-                <label>📦 Other</label>
-                <input type="number" class="expense" data-category="Other" placeholder="$0">
-            </div>
-
-        </div>
-
-        <button id="analyzeBtn" class="analyze-btn">
-            Analyze My Expenses
-        </button>
-
-    </section>
-
-
-    <!-- SUMMARY -->
-    <section id="results" class="results hidden">
-
-        <div class="summary-grid">
-
-            <div class="summary-card income-card">
-                <span>Monthly Income</span>
-                <strong id="incomeResult">$0</strong>
-            </div>
-
-            <div class="summary-card expense-card">
-                <span>Current Expenses</span>
-                <strong id="expenseResult">$0</strong>
-            </div>
-
-            <div class="summary-card cut-card">
-                <span>Expenses To Cut</span>
-                <strong id="cutResult">$0</strong>
-            </div>
-
-            <div class="summary-card saving-card">
-                <span>Possible Savings</span>
-                <strong id="savingResult">$0</strong>
-            </div>
+            <button
+                type="button"
+                id="freshBtn"
+            >
+                Start Fresh Expenses
+            </button>
 
         </div>
 
 
-        <!-- STATUS -->
-        <div id="statusBox" class="status-box">
-            <h2 id="statusTitle"></h2>
-            <p id="statusText"></p>
-        </div>
+
+        <!-- =================================
+             RECOMMENDED BUDGET
+        ================================== -->
+
+        <section
+            id="recommendationSection"
+            class="card hidden"
+        >
+
+            <div class="section-heading">
+
+                <h2>
+                    Recommended Budget
+                </h2>
+
+                <p>
+                    Your recommended spending limit based on your
+                    income and saving target.
+                </p>
+
+            </div>
 
 
-        <!-- PLAN -->
+            <div class="recommended-grid">
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        House Rent
+                    </span>
+
+                    <strong id="recHousing">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Food
+                    </span>
+
+                    <strong id="recFood">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Transportation
+                    </span>
+
+                    <strong id="recTransport">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Utilities
+                    </span>
+
+                    <strong id="recUtilities">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Healthcare
+                    </span>
+
+                    <strong id="recHealthcare">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Entertainment
+                    </span>
+
+                    <strong id="recEntertainment">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Shopping
+                    </span>
+
+                    <strong id="recShopping">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="recommend-box">
+
+                    <span>
+                        Other
+                    </span>
+
+                    <strong id="recOther">
+                        ₹0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="recommend-summary">
+
+                <div>
+
+                    <span>
+                        Maximum Spending
+                    </span>
+
+                    <strong id="maxSpending">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>
+                        Target Savings
+                    </span>
+
+                    <strong id="targetSavings">
+                        ₹0
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================
+             CURRENT EXPENSES
+        ================================== -->
+
         <section class="card">
 
             <div class="section-heading">
-                <h2>🎯 Smart Expense Reduction Plan</h2>
-                <p>Recommended limits based on your income and savings target.</p>
-            </div>
 
-            <div class="table-wrapper">
+                <h2>
+                    Current Expenses
+                </h2>
 
-                <table>
-
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Current</th>
-                            <th>Recommended</th>
-                            <th>Cut</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="budgetTable"></tbody>
-
-                </table>
+                <p>
+                    Enter your actual monthly expenses.
+                </p>
 
             </div>
+
+
+            <div class="expense-grid">
+
+
+                <div class="expense-input">
+
+                    <label>
+                        House Rent
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Housing"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Food
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Food"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Transportation
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Transportation"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Utilities & Bills
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Utilities"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Healthcare
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Healthcare"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Entertainment
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Entertainment"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Shopping
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Shopping"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+
+                <div class="expense-input">
+
+                    <label>
+                        Other
+                    </label>
+
+                    <input
+                        type="number"
+                        class="expense"
+                        data-category="Other"
+                        placeholder="₹0"
+                        min="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button
+                id="analyzeBtn"
+                class="analyze-btn"
+            >
+                Analyze My Expenses
+            </button>
 
         </section>
 
 
-        <!-- CHARTS -->
-        <section class="charts-grid">
 
-            <div class="card chart-card">
-                <h2>Current Spending</h2>
-                <canvas id="currentChart"></canvas>
+        <!-- =================================
+             RESULTS
+        ================================== -->
+
+        <section
+            id="results"
+            class="hidden"
+        >
+
+
+            <!-- SUMMARY -->
+
+            <div class="summary-grid">
+
+                <div class="summary-card income-card">
+
+                    <span>
+                        Monthly Income
+                    </span>
+
+                    <strong id="incomeResult">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card expense-card">
+
+                    <span>
+                        Current Expenses
+                    </span>
+
+                    <strong id="expenseResult">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card cut-card">
+
+                    <span>
+                        Recommended Cut
+                    </span>
+
+                    <strong id="cutResult">
+                        ₹0
+                    </strong>
+
+                </div>
+
+
+                <div class="summary-card saving-card">
+
+                    <span>
+                        Possible Savings
+                    </span>
+
+                    <strong id="savingResult">
+                        ₹0
+                    </strong>
+
+                </div>
+
             </div>
 
-            <div class="card chart-card">
-                <h2>Current vs Recommended</h2>
-                <canvas id="recommendedChart"></canvas>
+
+
+            <!-- STATUS -->
+
+            <div
+                id="statusBox"
+                class="status-box"
+            >
+
+                <h2 id="statusTitle"></h2>
+
+                <p id="statusText"></p>
+
             </div>
+
+
+
+            <!-- REDUCTION PLAN -->
+
+            <section class="card">
+
+                <div class="section-heading">
+
+                    <h2>
+                        Expense Reduction Plan
+                    </h2>
+
+                    <p>
+                        Compare current expenses with your recommended budget.
+                    </p>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Category</th>
+
+                                <th>Current</th>
+
+                                <th>Recommended</th>
+
+                                <th>Cut</th>
+
+                                <th>Action</th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody id="budgetTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- CHARTS -->
+
+            <div class="charts-grid">
+
+
+                <section class="card chart-card">
+
+                    <h2>
+                        Current Expense Distribution
+                    </h2>
+
+                    <p>
+                        Your actual expenses by category.
+                    </p>
+
+                    <div class="chart-container">
+
+                        <canvas id="currentChart"></canvas>
+
+                    </div>
+
+                </section>
+
+
+                <section class="card chart-card">
+
+                    <h2>
+                        Current vs Recommended
+                    </h2>
+
+                    <p>
+                        Compare your current spending with the recommended budget.
+                    </p>
+
+                    <div class="chart-container">
+
+                        <canvas id="recommendedChart"></canvas>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+
+
+            <!-- FINAL PLAN -->
+
+            <section class="card final-plan">
+
+                <h2>
+                    Your Monthly Financial Plan
+                </h2>
+
+
+                <div class="plan-grid">
+
+                    <div>
+
+                        <span>
+                            Income
+                        </span>
+
+                        <strong id="planIncome">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Recommended Spending
+                        </span>
+
+                        <strong id="planExpense">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Recommended Savings
+                        </span>
+
+                        <strong id="planSavings">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="progress-container">
+
+                    <div class="progress-label">
+
+                        <span>
+                            Savings Goal
+                        </span>
+
+                        <span id="savingPercentage">
+                            0%
+                        </span>
+
+                    </div>
+
+
+                    <div class="progress-bar">
+
+                        <div id="progress"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
 
         </section>
 
-
-        <!-- FINAL PLAN -->
-        <section class="card final-plan">
-
-            <h2>💵 Your Monthly Financial Plan</h2>
-
-            <div class="plan-grid">
-
-                <div>
-                    <span>Income</span>
-                    <strong id="planIncome">$0</strong>
-                </div>
-
-                <div>
-                    <span>Recommended Spending</span>
-                    <strong id="planExpense">$0</strong>
-                </div>
-
-                <div>
-                    <span>Recommended Savings</span>
-                    <strong id="planSavings">$0</strong>
-                </div>
-
-            </div>
-
-            <div class="progress-container">
-                <div class="progress-label">
-                    <span>Savings Goal</span>
-                    <span id="savingPercentage">0%</span>
-                </div>
-
-                <div class="progress-bar">
-                    <div id="progress"></div>
-                </div>
-            </div>
-
-        </section>
-
-    </section>
-
-</main>
+    </main>
 
 
-<footer>
-    <p>Smart Expense Advisor • Financial Planning Project</p>
-</footer>
+
+    <footer>
+
+        <p>
+            Smart Expense Advisor | Financial Planning Project
+        </p>
+
+    </footer>
 
 
-<script src="script.js"></script>
+    <script src="script.js"></script>
 
 </body>
-</html>  
+
+</html>
